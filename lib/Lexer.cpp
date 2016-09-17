@@ -3,6 +3,7 @@
 //
 
 #include "Lexer.h"
+#include "utilities.h"
 
 #define EPSILON       -1
 #define CLOSURE       '*'
@@ -20,9 +21,9 @@ bool Lexer::Construct(std::string strRegex){
     while( strRegex.find("[") != std::string::npos){
         strRegex = bracketPreProcessing(strRegex);
     }
-    m_infixStr = const_cast<char*>(strRegex.c_str());
 
-    if (!constructNFA()){
+
+    if (!constructNFA(strRegex)){
         return false;
     }
 
@@ -32,9 +33,28 @@ bool Lexer::Construct(std::string strRegex){
 }
 
 
-bool Lexer::constructNFA() {
+bool Lexer::constructNFA(std::string strRegex) {
+    utilities utils;
+    m_postRegex = utils.infix2Postfix(strRegex);
+    for(int i=0; i<(int)m_postRegex.size(); ++i){
+        char currentChar = m_postRegex[i];
+        if( !isOperator(currentChar)){
 
+        }
+    }
 }
+
+bool Lexer::isOperator(char inputChar) {
+    return(( inputChar == CLOSURE )        ||
+           ( inputChar == OR )             ||
+           ( inputChar == OPEN_PAREN )     ||
+           ( inputChar == CLOSE_PAREN )    ||
+           ( inputChar == PLUS_CLOSURE )   ||
+           ( inputChar == EXPLICIT_CONCAT) ||
+           ( inputChar == OPTIONAL ));
+}
+
+
 
 
 

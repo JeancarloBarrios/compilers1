@@ -16,21 +16,26 @@ struct DFA{
 
 
 class Lexer {
-    NFA m_nfa;
-    DFA m_dfa;
-    DFA m_directDfa;
-    std::string m_infixStr;
-
-
     Lexer();
     ~Lexer();
 
-public:
-    bool Construct(std::string strRegex);
-    bool constructNFA();
 
 private:
+    NFA m_nfa;
+    DFA m_dfa;
+    DFA m_directDfa;
+    std::string m_postRegex;
+
+    std::string m_infixStr;
     std::string bracketPreProcessing(std::string strRegex);
+    bool isOperator(char inputChar);
+
+
+public:
+    bool Construct(std::string strRegex);
+    bool constructNFA(std::string strRegex);
+
+
 
 };
 

@@ -1,10 +1,14 @@
 #include <iostream>
+#include <stack>
 #include "../lib/utilities.h"
+#include "../lib/Lexer.h"
 int main() {
 
 
     utilities utils;
-    std::cout << utils.infix2Postfix("HolaMundo") << std::endl;
+    Lexer lex;
+    lex.Construct("(a|b)*|c");
+    lex.printNFA();
 
     return 0;
 }

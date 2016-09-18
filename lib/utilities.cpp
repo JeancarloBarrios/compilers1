@@ -4,6 +4,7 @@
 
 #include "utilities.h"
 #include <iostream>
+
 #include <cstring>
 
 std::string utilities::infix2Postfix(std::string infixRegex){
@@ -12,6 +13,9 @@ std::string utilities::infix2Postfix(std::string infixRegex){
     std::cout << m_preRegEx << std::endl;
     std::cout << m_currentPreProcChar << std::endl;
     processOr();
+    std::cout << "Infix: " << infixRegex << std::endl;
+    std::cout << "postFix: " << m_postFixRegex << std::endl;
+
     return m_postFixRegex;
 }
 

@@ -4,6 +4,7 @@
 
 #include "AutomataState.h"
 #include <sstream>
+#include <iostream>
 
 AutomataState::~AutomataState() {
     m_NFAStates.clear();
@@ -34,8 +35,9 @@ void AutomataState::addTransition(char inputChar, AutomataState *pState) {
 void AutomataState::removeTransition(AutomataState *pState) {
     std::multimap<char, AutomataState*>::iterator iterator;
     for (iterator = m_transition.begin(); iterator!= m_transition.end();){
-        AutomataState *toSate = iterator -> second;
-        if (toSate == pState){
+        AutomataState *toState = iterator -> second;
+
+        if (toState == pState){
             m_transition.erase(iterator++);
         }
         else {

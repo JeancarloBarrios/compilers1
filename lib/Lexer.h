@@ -23,12 +23,13 @@ public:
     Lexer();
     ~Lexer();
     bool Construct(std::string strRegex);
-    bool Simulate(std::string strText);
+    bool simulateDFA(std::string strText);
     typedef std::vector<AutomataState*> table;
     typedef table::reverse_iterator tableReverIterator;
     typedef table::iterator tableIterator;
     typedef std::set<AutomataState*>::iterator StateIterator;
     void printNFA();
+    void printDFA();
 
 
 private:
@@ -55,8 +56,8 @@ private:
     bool isOperator(char inputChar);
     bool isOpenParen(char inputChar);
     bool isCloseParen(char inputChar);
-    void epsilonClosure(std::set<AutomataState*> T, std::set<AutomataState*> &Res);
-    void move(char charInput, std::set<AutomataState*> T, std::set<AutomataState*> &Res);
+    void epsilonClosure(std::set<AutomataState*> startStates, std::set<AutomataState*> &Res);
+    void move(char charInput, std::set<AutomataState*> NFAState, std::set<AutomataState*> &Res);
     void convertNFAtoDfa();
     void reduceDFA();
     void destroy();
@@ -64,6 +65,7 @@ private:
     void minimizeDFA();
 
     void printAutomata(table &table);
+
 
 
 

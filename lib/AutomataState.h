@@ -19,6 +19,7 @@ public:
     typedef std::vector<AutomataState*> table;
     typedef std::set<AutomataState*>::iterator stateIterator;
     std::multimap<char, AutomataState*> m_transition;
+    std::multimap<char, AutomataState*> m_transitionDFA;
     int m_stateId;
     bool m_acceptingState;
     bool m_marked;

@@ -337,7 +337,7 @@ void getTime(clock_t Start){
     elapsedTime = elapsedTime * 1000000;
     std::cout << "DFA Simulation Execution Time: \t" << elapsedTime <<"micro seconds" << std::endl;
 }
-
+// Simulate DFA
 bool Lexer::simulateDFA(std::string strText) {
     clock_t Start = clock();
     m_strText = strText;
@@ -359,6 +359,41 @@ bool Lexer::simulateDFA(std::string strText) {
     }
     getTime(Start);
     return false;
+
+}
+
+bool Lexer::simulataNFA(std::string strText) {
+    if (m_NFATable.size()==0){
+        return false;
+    }
+    std::set<AutomataState*> startStates;
+    startStates.insert(m_NFATable[0]);
+
+    std::set<AutomataState*> currentStates;
+
+    epsilonClosure(startStates, currentStates);
+
+    std::string::iterator iterator;
+    for (iterator=strText.begin(); iterator!=strText.end(); ++iterator){
+        std::set<AutomataState*> previousStates = currentStates;
+        move(*iterator, previousStates, currentStates);
+        if (currentStates.empty() ){
+            return false;
+        }
+        std::set<AutomataState*> previousEpsilonStates = currentStates;
+        epsilonClosure(previousEpsilonStates, currentStates);
+    }
+    StateIterator finalStateIterator;
+
+    for (finalStateIterator = currentStates.begin(); finalStateIterator != currentStates.end(); ++finalStateIterator){
+        if ((*finalStateIterator)->m_acceptingState){
+            return true;
+        }
+    }
+    return false;
+
+
+
 
 }
 

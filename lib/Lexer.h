@@ -24,6 +24,7 @@ public:
     ~Lexer();
     bool Construct(std::string strRegex);
     bool simulateDFA(std::string strText);
+    bool simulataNFA(std::string strText);
     typedef std::vector<AutomataState*> table;
     typedef table::reverse_iterator tableReverIterator;
     typedef table::iterator tableIterator;
@@ -57,6 +58,7 @@ private:
     bool isOpenParen(char inputChar);
     bool isCloseParen(char inputChar);
     void epsilonClosure(std::set<AutomataState*> startStates, std::set<AutomataState*> &Res);
+    void NFAepsilonClosure(std::set<AutomataState*> currentStates, std::set<AutomataState*> &Res);
     void move(char charInput, std::set<AutomataState*> NFAState, std::set<AutomataState*> &Res);
     void convertNFAtoDfa();
     void reduceDFA();

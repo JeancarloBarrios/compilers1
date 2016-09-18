@@ -64,6 +64,32 @@ bool testSuite::runTests() {
     assert ( true == lexer.simulateDFA("whoa"));
     assert ( true == lexer.simulateDFA("ehollllllllllllllllllllllllaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"));
 
+    lexer.construct("(b|b)*abb(a|b)*");
+    //    Simulate NFA
+    assert ( true == lexer.simulataNFA("babbaaaaa"));
+    assert ( true == lexer.simulataNFA("abb"));
+    //    Simulate DFA
+    assert ( true == lexer.simulateDFA("babbaaaaa"));
+    assert ( true == lexer.simulateDFA("abb"));
+
+    lexer.construct("a*b+c?([amc])");
+    //    Simulate NFA
+    assert ( true == lexer.simulataNFA("aaaaaaaaaaaaaabbbbbbbbbbbbba"));
+    assert ( true == lexer.simulataNFA("bcc"));
+    //    Simulate DFA
+    assert ( true == lexer.simulateDFA("aaaaaaaaaaaaaabbbbbbbbbbbbba"));
+    assert ( true == lexer.simulateDFA("bcc"));
+
+    lexer.construct("([abc])*([edf])+(hola)?h*e+j?no");
+    //    Simulate NFA
+    assert ( true == lexer.simulataNFA("deno"));
+    assert ( true == lexer.simulataNFA("bdddddddddddddddddholaejno"));
+    //    Simulate DFA
+    assert ( true == lexer.simulateDFA("deno"));
+    assert ( true == lexer.simulateDFA("bdddddddddddddddddholaejno"));
+
+
+
 
 }
 

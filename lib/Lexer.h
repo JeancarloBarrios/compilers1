@@ -22,7 +22,7 @@ class Lexer {
 public:
     Lexer();
     ~Lexer();
-    bool Construct(std::string strRegex);
+    bool construct(std::string strRegex);
     bool simulateDFA(std::string strText);
     bool simulataNFA(std::string strText);
     typedef std::vector<AutomataState*> table;

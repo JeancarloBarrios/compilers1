@@ -28,7 +28,7 @@ Lexer::~Lexer() {
 }
 
 
-bool Lexer::Construct(std::string strRegex){
+bool Lexer::construct(std::string strRegex){
     while( strRegex.find("[") != std::string::npos){
         strRegex = bracketPreProcessing(strRegex);
     }
@@ -331,11 +331,12 @@ void Lexer::reduceDFA() {
 
 
 // Simulate ------------------------------------------------------------------------------------------------------------
-void getTime(clock_t Start){
+void getTime(clock_t Start, std::string type){
     clock_t End = clock();
     double elapsedTime = double(End - Start) / CLOCKS_PER_SEC;
     elapsedTime = elapsedTime * 1000000;
-    std::cout << "DFA Simulation Execution Time: \t" << elapsedTime <<"micro seconds" << std::endl;
+
+    std::cout << type << " Simulation Execution Time: \t" << elapsedTime <<"micro seconds" << std::endl;
 }
 // Simulate DFA
 bool Lexer::simulateDFA(std::string strText) {
@@ -347,22 +348,23 @@ bool Lexer::simulateDFA(std::string strText) {
         char currentChar = m_strText[i];
         pState ->getTransition(currentChar, transition);
         if (transition.empty()){
-            getTime(Start);
+            getTime(Start, "DFA");
             return false;
         }
         pState = transition[0];
 
     }
     if (pState->m_acceptingState){
-        getTime(Start);
+        getTime(Start, "DFA");
         return true;
     }
-    getTime(Start);
+    getTime(Start, "DFA");
     return false;
 
 }
 
 bool Lexer::simulataNFA(std::string strText) {
+    clock_t Start = clock();
     if (m_NFATable.size()==0){
         return false;
     }
@@ -378,6 +380,7 @@ bool Lexer::simulataNFA(std::string strText) {
         std::set<AutomataState*> previousStates = currentStates;
         move(*iterator, previousStates, currentStates);
         if (currentStates.empty() ){
+            getTime(Start, "NFA");
             return false;
         }
         std::set<AutomataState*> previousEpsilonStates = currentStates;
@@ -387,9 +390,11 @@ bool Lexer::simulataNFA(std::string strText) {
 
     for (finalStateIterator = currentStates.begin(); finalStateIterator != currentStates.end(); ++finalStateIterator){
         if ((*finalStateIterator)->m_acceptingState){
+            getTime(Start, "NFA");
             return true;
         }
     }
+    getTime(Start, "NFA");
     return false;
 
 

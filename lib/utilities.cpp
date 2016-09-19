@@ -1,13 +1,12 @@
-//
-// Created by ebon1 on 9/16/16.
-//
 
 #include "utilities.h"
 #include <iostream>
 
 #include <cstring>
 
+//Whole process works with recursive calls to ensure proper order
 std::string utilities::infix2Postfix(std::string infixRegex){
+    //convert to char string
     m_preRegEx = const_cast<char*>(infixRegex.c_str());
     m_currentPreProcChar = *(m_preRegEx++);
     std::cout << m_preRegEx << std::endl;

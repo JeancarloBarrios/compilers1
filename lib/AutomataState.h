@@ -1,6 +1,3 @@
-//
-// Created by ebon1 on 9/16/16.
-//
 
 #ifndef PROYECT1_AUTOMATASTATE_H
 #define PROYECT1_AUTOMATASTATE_H

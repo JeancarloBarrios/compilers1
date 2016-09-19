@@ -1,6 +1,3 @@
-//
-// Created by ebon1 on 9/16/16.
-//
 
 #ifndef PROYECT1_LEXER_H
 #define PROYECT1_LEXER_H
@@ -49,7 +46,7 @@ private:
     bool constructNFA(std::string strRegex);
     void pushOnCharStack(char inputChar);
     bool popTable(table &NFATable);
-    bool concate();
+    bool concat();
     bool closure();
     bool closureOptional();
     bool closurePlus();

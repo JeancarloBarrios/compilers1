@@ -1,6 +1,3 @@
-//
-// Created by ebon1 on 9/16/16.
-//
 
 #include "AutomataState.h"
 #include <sstream>
@@ -11,27 +8,31 @@ AutomataState::~AutomataState() {
     m_transition.clear();
 }
 
+//create new automata state with current states, id, accepting state and groupid
 AutomataState::AutomataState(std::set<AutomataState *> NFAState, int sID) {
     m_NFAStates = NFAState;
     m_stateId = sID;
     m_acceptingState = false;
     m_groupId = 0;
     stateIterator iterator;
+    //if state contains accepting state, it IS an accepting state
     for (iterator = NFAState.begin(); iterator!= NFAState.end(); ++iterator) {
         if((*iterator) -> m_acceptingState){
             m_acceptingState = true;
         }
     }
 }
-
+//copies a state
 AutomataState::AutomataState(const AutomataState &other) {
     *this = other;
 }
 
+//transition is a char, nextStatePoint pair
 void AutomataState::addTransition(char inputChar, AutomataState *pState) {
     m_transition.insert(std::make_pair(inputChar, pState));
 }
 
+//erases transitions to a state
 void AutomataState::removeTransition(AutomataState *pState) {
     std::multimap<char, AutomataState*>::iterator iterator;
     for (iterator = m_transition.begin(); iterator!= m_transition.end();){
@@ -46,6 +47,7 @@ void AutomataState::removeTransition(AutomataState *pState) {
     }
 }
 
+//returns a transition
 void AutomataState::getTransition(char inputChar, table &States) {
     States.clear();
     std::multimap<char, AutomataState*>::iterator iterator;
@@ -55,24 +57,31 @@ void AutomataState::getTransition(char inputChar, table &States) {
     }
 }
 
+//returns current states
 std::set<AutomataState*>& AutomataState::getNFAState() {
     return m_NFAStates;
 }
 
+//logic for finding dead ends
 bool AutomataState::isDeadEnd() {
+    //trivial cases
     if(m_acceptingState){
         return false;
     }
     if(m_transition.empty()){
         return true;
     }
+    //iterates over a char, state map
     std::multimap<char, AutomataState*>::iterator iterator;
     for (iterator=m_transition.begin(); iterator != m_transition.end(); ++iterator){
+        //value is the to state
         AutomataState *toState = iterator->second;
+        //if it goes to a state besides itself, it's not a dead end
         if (toState!= this){
             return false;
         }
     }
+    //otherwise (only leads to itself) it's a dead end
     return true;
 }
 

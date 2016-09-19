@@ -1,6 +1,3 @@
-//
-// Created by ebon1 on 9/16/16.
-//
 
 #ifndef PROYECT1_UTILITIES_H
 #define PROYECT1_UTILITIES_H

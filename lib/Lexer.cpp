@@ -1,6 +1,4 @@
-//
-// Created by ebon1 on 9/16/16.
-//
+
 #include <sstream>
 #include <iostream>
 #include <algorithm>
@@ -27,34 +25,40 @@ Lexer::~Lexer() {
 
 }
 
-
+//Create automata over a given regex string
 bool Lexer::construct(std::string strRegex){
+    //converts square brackets to parenthesis containing explicit values
     while( strRegex.find("[") != std::string::npos){
         strRegex = bracketPreProcessing(strRegex);
     }
 
-
+    //if unable to construct NFA, return false
     if (!constructNFA(strRegex)){
         return false;
     }
 
+    //get NFA table and set last state to accepting state
     popTable(m_NFATable);
     m_NFATable[m_NFATable.size()-1] -> m_acceptingState = true;
 
+    //run conversion to DFA
     convertNFAtoDfa();
     return true;
 
 }
 
-
+//converts a regex to NFA
 bool Lexer::constructNFA(std::string strRegex) {
+    //convert infix string to postfix
     utilities utils;
     m_postRegex = utils.infix2Postfix(strRegex);
+    //push literals onto stack
     for(int i=0; i<(int)m_postRegex.size(); ++i){
         char currentChar = m_postRegex[i];
         if( !isOperator(currentChar)){
             pushOnCharStack(currentChar);
         }
+        //When operator found, realize proper action
         else {
             switch (currentChar){
                 case CLOSURE:
@@ -70,7 +74,7 @@ bool Lexer::constructNFA(std::string strRegex) {
                     Or();
                     break;
                 case EXPLICIT_CONCAT:
-                    concate();
+                    concat();
                     break;
             }
         }
@@ -78,6 +82,7 @@ bool Lexer::constructNFA(std::string strRegex) {
     return true;
 }
 
+// Returns true if current character is an operator
 bool Lexer::isOperator(char inputChar) {
     return(( inputChar == CLOSURE )        ||
            ( inputChar == OR )             ||
@@ -88,18 +93,22 @@ bool Lexer::isOperator(char inputChar) {
            ( inputChar == OPTIONAL ));
 }
 
+//pushes new character into automata using Thompson method
 void Lexer::pushOnCharStack(char inputChar) {
     AutomataState *s0 = new AutomataState(m_nextStateId++);
     AutomataState *s1 = new AutomataState(m_nextStateId++);
 
+    //transition between two new states using character
     s0 -> addTransition(inputChar, s1);
     table subTable;
     subTable.push_back(s0);
     subTable.push_back(s1);
     m_charClassStack.push(subTable);
+    //add character to inputset
     m_inputSet.insert(inputChar);
 }
 
+//pops last element from table
 bool Lexer::popTable(table &NFATable) {
     if(m_charClassStack.size()>0){
         NFATable = m_charClassStack.top();
@@ -108,7 +117,9 @@ bool Lexer::popTable(table &NFATable) {
     }
     return false;
 }
+
 // OPERATORS------------------------------------------------------------------------------------------------------------
+//take last element, add epsilon transitions from start to end and end to start
 bool Lexer::closure() {
     table prevTable;
     if (!popTable(prevTable)){
@@ -129,6 +140,7 @@ bool Lexer::closure() {
 
 }
 
+//add epsilon closure from end of last element to its start
 bool Lexer::closurePlus() {
     table prevTable;
     if(!popTable(prevTable)){
@@ -149,6 +161,7 @@ bool Lexer::closurePlus() {
 
 }
 
+//add episolon transition from start to end of last element("jumping" last element)
 bool Lexer::closureOptional() {
     table prevTable;
     if(!popTable(prevTable)){
@@ -168,6 +181,7 @@ bool Lexer::closureOptional() {
     return true;
 }
 
+//add transitions to last to elements, enabling and reclosing a "fork"
 bool Lexer::Or() {
     table table0, table1;
 
@@ -191,7 +205,8 @@ bool Lexer::Or() {
     return true;
 }
 
-bool Lexer::concate() {
+//transition directly between last two elements
+bool Lexer::concat() {
     table table0, table1;
 
     if(!popTable(table1) || !popTable(table0)){
@@ -204,10 +219,11 @@ bool Lexer::concate() {
     return true;
 }
 
-
+//given an input and current state, update current state to new states when a transition available
 void Lexer::move(char charInput, std::set<AutomataState *> NFAState, std::set<AutomataState *> &Res) {
     Res.clear();
     StateIterator iterator;
+    //get transition from each state and add new state to results
     for (iterator =NFAState.begin(); iterator!=NFAState.end(); ++iterator){
         table states;
         (*iterator) -> getTransition(charInput, states);
@@ -217,20 +233,25 @@ void Lexer::move(char charInput, std::set<AutomataState *> NFAState, std::set<Au
     }
 }
 
+//epsilon closure on current states, writing to results
 void Lexer::epsilonClosure(std::set<AutomataState *> startStates, std::set<AutomataState *> &Res) {
     std::stack<AutomataState*> unvistedStates;
     Res.clear();
     Res = startStates;
     StateIterator iterator;
+    //push all current states onto unvisitedStates stack
     for (iterator=startStates.begin(); iterator!=startStates.end(); ++iterator){
         unvistedStates.push(*iterator);
     }
+    //while unvisitedStates still exist
     while(!unvistedStates.empty()){
+        //visit all espilon transitions from an unvisited state
         AutomataState* currentState = unvistedStates.top();
         unvistedStates.pop();
         table epsilonStates;
         currentState -> getTransition(EPSILON, epsilonStates);
         tableIterator epsilonIterator;
+        //if found states not already found, add them to unvisited and results
         for(epsilonIterator=epsilonStates.begin(); epsilonIterator!=epsilonStates.end(); ++epsilonIterator){
             if (Res.find(*epsilonIterator)==Res.end()){
                 Res.insert(*epsilonIterator);
@@ -243,6 +264,7 @@ void Lexer::epsilonClosure(std::set<AutomataState *> startStates, std::set<Autom
 // NFA -> DFA ----------------------------------------------------------------------------------------------------------
 
 void Lexer::convertNFAtoDfa() {
+  //clean current table
     for (int i=0; i<(int)m_DFATable.size(); ++i){
         delete m_DFATable[i];
     }
@@ -252,22 +274,28 @@ void Lexer::convertNFAtoDfa() {
         return;
     }
 
+    //Start states of DFA are the espilon closure of NFA
     std::set<AutomataState*> NFAStartStates;
     NFAStartStates.insert(m_NFATable[0]);
     std::set<AutomataState*> DFAStartStates;
     epsilonClosure(NFAStartStates, DFAStartStates);
+    //save as first state
     m_nextStateId = 0;
     AutomataState *DFAStartState = new AutomataState(DFAStartStates, m_nextStateId++);
 
+    //add first state to new dfa table
     m_DFATable.push_back(DFAStartState);
 
+    //add first state to unvisitedStates
     table unvisitedStates;
     unvisitedStates.push_back(DFAStartState);
 
+    //while some states still unvisited...
     while (!unvisitedStates.empty()){
         AutomataState* currentDFAState = unvisitedStates[unvisitedStates.size()-1];
         unvisitedStates.pop_back();
         std::set<char>::iterator iterator;
+        //iterate over the inputSet, moving and epsilonClosuring each current state
         for (iterator=m_inputSet.begin(); iterator!=m_inputSet.end(); ++iterator){
             std::set<AutomataState*> moveResult, epsilonClosureResult;
             move(*iterator, currentDFAState->getNFAState(), moveResult);
@@ -278,6 +306,7 @@ void Lexer::convertNFAtoDfa() {
 
             bool alreadyExists = false;
 
+            //check if resulting state already exists, if so just pass
             AutomataState *s = NULL;
             for (int i = 0; i < (int)m_DFATable.size(); ++i) {
                 s = m_DFATable[i];
@@ -286,6 +315,7 @@ void Lexer::convertNFAtoDfa() {
                     break;
                 }
             }
+            //otherwise, save as a new state with transition of current iterator
             if(!alreadyExists){
                 AutomataState* newState = new AutomataState(epsilonClosureResult, m_nextStateId++);
                 unvisitedStates.push_back(newState);
@@ -294,6 +324,7 @@ void Lexer::convertNFAtoDfa() {
             }
             else
             {
+                //if it does already exist, add the new transition to the current state
                 currentDFAState -> addTransition(*iterator, s);
             }
         }
@@ -301,6 +332,7 @@ void Lexer::convertNFAtoDfa() {
     reduceDFA();
 }
 
+//removes any dead ends that get left from transition
 void Lexer::reduceDFA() {
     std::set<AutomataState*> deadEnds;
     for (int i = 0; i < (int)m_DFATable.size(); ++i) {
@@ -339,6 +371,7 @@ void getTime(clock_t Start, std::string type){
     std::cout << type << " Simulation Execution Time: \t" << elapsedTime <<"micro seconds" << std::endl;
 }
 // Simulate DFA
+// Fails on no transition available or if final state not an accepting state
 bool Lexer::simulateDFA(std::string strText) {
     clock_t Start = clock();
     m_strText = strText;
@@ -363,6 +396,8 @@ bool Lexer::simulateDFA(std::string strText) {
 
 }
 
+//moves and espilon closes on input
+//fails on empty table or if results don't contain an accepting state
 bool Lexer::simulataNFA(std::string strText) {
     clock_t Start = clock();
     if (m_NFATable.size()==0){
@@ -403,6 +438,8 @@ bool Lexer::simulataNFA(std::string strText) {
 }
 
 // Private Methods Go Here ---------------------------------------------------------------------------------------------
+
+//replaces [X] and [x0-xn] with (x0|x1|...|xn)
 std::string Lexer::bracketPreProcessing(std::string strRegEx){
     std::string::size_type startPos, endPos, separatorPos;
     std::string ReplacedStrRegEx;
@@ -414,12 +451,14 @@ std::string Lexer::bracketPreProcessing(std::string strRegEx){
     if ( startPos == std::string::npos || endPos == std::string::npos )
         return strRegEx;
 
+    //Replacing with (
     ReplacedStrRegEx += strRegEx.substr( 0, startPos );
     ReplacedStrRegEx.push_back('(');
     std::string result = strRegEx.substr( startPos + 1, endPos - startPos - 1);
     char first = result[0];
     char last  = result[result.size() - 1 ];
 
+    //if not a range, just returns elements with OR operator
     if ( separatorPos != std::string::npos ) {
         while ( first != last ) {
             ReplacedStrRegEx.push_back(first);
@@ -428,6 +467,7 @@ std::string Lexer::bracketPreProcessing(std::string strRegEx){
         }
         ReplacedStrRegEx.push_back(first);
     } else {
+        //this baby works with ranges because of implementing over ascii values
         startPos++;
         while ( startPos != endPos - 1) {
             ReplacedStrRegEx.push_back(strRegEx[startPos]);
@@ -443,11 +483,11 @@ std::string Lexer::bracketPreProcessing(std::string strRegEx){
 }
 
 
-
+//output automata
 void Lexer::printAutomata(table &table) {
     std::string tableString;
     bool initialState = true;
-    tableString+= "Aceptence State \n";
+    tableString+= "Acceptance States: \n";
     for (int i = 0; i < (int)table.size(); ++i) {
         AutomataState *pState = table[i];
         if(pState-> m_acceptingState){
@@ -461,7 +501,7 @@ void Lexer::printAutomata(table &table) {
         pState -> getTransition(EPSILON, State);
         for (int j=0; j< (int)State.size(); ++j){
             if (j==0 && initialState){
-                tableString += "Initial State \n \tstate: "+ pState->getStringId() + "\n \n";
+                tableString += "Initial State: \n \tstate: "+ pState->getStringId() + "\n \n";
                 initialState = false;
             }
             tableString += "\t" + pState->getStringId() + "->" + State[j]->getStringId();

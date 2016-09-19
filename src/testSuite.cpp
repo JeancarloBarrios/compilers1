@@ -1,6 +1,3 @@
-//
-// Created by ebon1 on 9/17/16.
-//
 
 #include <stdio.h>
 #include <string.h>
@@ -92,4 +89,3 @@ bool testSuite::runTests() {
 
 
 }
-
